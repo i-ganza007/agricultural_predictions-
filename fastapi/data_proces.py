@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlmodel import Session, select
 from db_schema import engine 
-from models import Items, Areas, Environment, Yield , Crops , countries
+from models import Items, Areas, Environment, Yield  , countries
 
 data = pd.read_csv('yield_df.csv')
 
@@ -21,11 +21,11 @@ Areas_dataset = data['Area']
 Environ_dataset = data[['average_rain_fall_mm_per_year', 'pesticides_tonnes', 'avg_temp']]
 Yield_dataset = data['hg/ha_yield']
 
-def validate_item():
-    crops = [i.value.lower() for i in Crops] 
-    if not Items_dataset.str.lower().isin(crops).all():
-        invalid_items = Items_dataset[~Items_dataset.str.lower().isin(crops)].unique()
-        raise ValueError(f"items invalid: {invalid_items}")
+# def validate_item():
+#     crops = [i.value.lower() for i in Crops] 
+#     if not Items_dataset.str.lower().isin(crops).all():
+#         invalid_items = Items_dataset[~Items_dataset.str.lower().isin(crops)].unique()
+#         raise ValueError(f"items invalid: {invalid_items}")
 
 def validate_area():
     if not Areas_dataset.isin(countries).all():
@@ -162,7 +162,7 @@ def enter_data():
             }).reset_index()
 
             print("Validating data...")
-            validate_item() 
+            # validate_item() 
             validate_area()  
             validate_years()  
             validate_environ()  

@@ -1,4 +1,3 @@
-from re import L
 from fastapi import FastAPI, HTTPException , Depends
 from data_proces import enter_data , Session
 import logging
@@ -40,20 +39,48 @@ def insert_recs():
     except Exception as e:
         logger.error(f"Data insertion failed: {str(e)}")
         raise HTTPException(status_code=500,detail=f"Data insertion failed: {str(e)}")
-    
+
+class ItemsInput(BaseModel):
+    item_name:str  
 
 class EnvironmentInput(BaseModel):
     year: int
     temp: float
     rai: float = Field(alias="rai")
     tavg: float = Field(alias="tavg")
-    area_id: int
 
 class YieldIn(BaseModel):
-    area_id: int
-    item_id: int
-    year: int
-    hg: float
+    hg_per_ha_yield: float = Field(alias='hg')
+
+
+
+class ItemUpdate(BaseModel):
+    item_name: str
+
+class EnvUpdate(BaseModel):
+    temp:float
+    average_rai: float = Field(alias="rai")
+    pesticides_tavg: float = Field(alias="tavg")
+    class Config:
+        allow_population_by_field_name = True
+
+# GET LAST ENTRIES
+@app.get('/items/latest')
+def get_latest_items() :
+    length=  len(list(items.get_all()))
+    return items.get_all()[length-1]
+@app.get('/environment/latest')
+def get_latest_environment() :
+    length=  len(list(environment.get_all()))
+    return environment.get_all()[length-1]
+@app.get('/yield/latest')
+def get_latest_yield() :
+    length=  len(list(yields.get_all()))
+    return yields.get_all()[length-1]
+@app.get('/areas/latest')
+def get_latest_areas() :
+    length=  len(list(areas.get_all()))
+    return areas.get_all()[length-1]
     
 # GET ALL REQUESTS
 @app.get('/items')
@@ -91,51 +118,65 @@ def get_single_yields(id:int)-> Dict[str,Any]:
 
 # UPDATE A SINGLE RECORD 
 
-@app.patch('/items/update/{id}')
-def update_item(id):
-    pass
+@app.put('/items/update/{id}')
+def update_item(req:ItemUpdate,id:int):
+    item_update = items.get(item_id=id)
+    item_update.item_name = req.item_name
+    items.update(item_update)
+    return f'Updated Item {id}'
 
-@app.patch('/areas/update/{id}')
-def update_areas(id):
-    pass
+# @app.put('/areas/update/{id}')
+# def update_areas(req,id):
+#     area_update = areas.get(area_id=id)
+#     area_update.area_name = req.area_name
+#     areas.update(area_update)
+#     return f'Updated Areas {id}'
 
-@app.patch('/environment/update/{id}')
-def update_environment(id):
-    pass
+@app.put('/environment/update/{id}/{year}')
+def update_environment(req:EnvUpdate,id:int,year:int):
+    env_update = environment.get(area_id=id,year=year)
+    env_update.average_rai = req.average_rai
+    env_update.pesticides_tavg = req.pesticides_tavg   
+    env_update.temp = req.temp
+    environment.update(env_update)
+    return f'Updated Environment {id}'
 
-@app.patch('/yield//update/{id}')
-def update_item(id):
-    pass
+@app.put('/yield/update/{area_id}/{item_id}/{year}')
+def update_yield(req:YieldIn,area_id,item_id,year):
+    yield_update = yields.get(area_id=area_id,item_id=item_id,year=year)
+    yield_update.hg_per_ha_yield = req.hg_per_ha_yield
+    yields.update(yield_update)
+    return f'Updated Yield {id}'
 
 # CREATE AND ADD A SINGLE RECORD
 
 @app.post('/items/add')
-def create_item(req:Items):
-    items.create(Items(item_id=req.item_id,item_name=req.item_name))
+def create_item(req:ItemsInput):
+    items.create(Items(item_name=req.item_name))
     return f'Added successfully'
 
-@app.post('/areas/add') # Double check !!!!
-def create_areas(req:Areas):
-    areas.create(Areas(area_id=req.area_id,area_name=req.area_name))
-    return f'Added successfully'
+# @app.post('/areas/add') # Double check !!!!
+# def create_areas(req:Areas):
+#     areas.create(Areas(area_id=req.area_id,area_name=req.area_name))
+#     return f'Added successfully'
 
-@app.post('/environment/add')
-def create_environment(req:EnvironmentInput):
+@app.post('/environment/add/{id}')
+def create_environment(req:EnvironmentInput,id:int):
     env = Environment(
         year=req.year,
         temp=req.temp,
         average_rai=req.rai,
         pesticides_tavg=req.tavg,
-        area_id=req.area_id
+        area_id=id
     )
     environment.create(env)
     return f'Added successfully'
 
-@app.post('/yield/add')
-def create_yield(req: YieldIn):
+@app.post('/yield/add/{area_id}/{item_id}')
+def create_yield(req: YieldIn,area_id,item_id):
     yiel = Yield(
-        area_id=req.area_id,
-        item_id=req.item_id,
+        area_id=area_id,
+        item_id=item_id,
         year=req.year,
         hg_per_ha_yield=req.hg
     )

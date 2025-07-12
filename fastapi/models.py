@@ -1,6 +1,5 @@
 from typing import List, Optional
 from sqlmodel import Relationship, SQLModel, Field
-from sqlalchemy import UniqueConstraint
 from enum import Enum
 import pycountry
 from pydantic import validator
@@ -9,28 +8,29 @@ from pydantic import validator
 countries: List[str] = [i.name for i in pycountry.countries] + ["Turkey"]
 
 #For validation in query parameters
-class Crops(str, Enum):
-    maize = 'Maize'
-    potatoes = 'Potatoes'
-    sorghum = 'Sorghum'
-    soybean = 'Soybeans'
-    wheat = 'Wheat'
-    rice_paddy = 'Rice, Paddy'  
-    cassava = 'Cassava'
-    sw_potatoes = 'Sweet Potatoes'  
-    plt_others = 'Plantains And Others'  
-    yams = 'Yams'
-    kijumba = 'Ikijumba'
+# class Crops(str, Enum):
+#     maize = 'Maize'
+#     potatoes = 'Potatoes'
+#     sorghum = 'Sorghum'
+#     soybean = 'Soybeans'
+#     wheat = 'Wheat'
+#     rice_paddy = 'Rice, Paddy'  
+#     cassava = 'Cassava'
+#     sw_potatoes = 'Sweet Potatoes'  
+#     plt_others = 'Plantains And Others'  
+#     yams = 'Yams'
+#     kijumba = 'Ikijumba'
+#     muleti = 'Umuleti'
 
 class Items(SQLModel, table=True):
     item_id: int = Field(primary_key=True)
     item_name: str = Field(max_length=50, nullable=False)
 
-    @validator('item_name')
-    def validate_crop(cls, v):
-        if v not in [crop.value for crop in Crops]:
-            raise ValueError("Invalid {v}")
-        return v
+    # @validator('item_name')
+    # def validate_crop(cls, v):
+    #     if v not in [crop.value for crop in Crops]:
+    #         raise ValueError("Invalid {v}")
+    #     return v
 
 class Areas(SQLModel, table=True):
     area_id: int = Field(primary_key=True)
