@@ -1,6 +1,9 @@
+from re import L
 from fastapi import FastAPI, HTTPException , Depends
 from data_proces import enter_data , Session
 import logging
+from typing import Any, List , Dict 
+from pydantic import BaseModel , Field
 from sqlmodel import SQLModel
 # from models import TestUser # You have to import the model instances before writing the create_all , since python doesn't run the code perfectly 
 from db_schema import engine
@@ -38,38 +41,52 @@ def insert_recs():
         logger.error(f"Data insertion failed: {str(e)}")
         raise HTTPException(status_code=500,detail=f"Data insertion failed: {str(e)}")
     
+
+class EnvironmentInput(BaseModel):
+    year: int
+    temp: float
+    rai: float = Field(alias="rai")
+    tavg: float = Field(alias="tavg")
+    area_id: int
+
+class YieldIn(BaseModel):
+    area_id: int
+    item_id: int
+    year: int
+    hg: float
+    
 # GET ALL REQUESTS
 @app.get('/items')
-def get_all_items():
+def get_all_items() -> List[Dict[str | int , Any]]:
     return items.get_all()
 
 @app.get('/areas')
-def get_all_areas():
+def get_all_areas() -> List[Dict[str | int,Any]]:
     return areas.get_all()
 
 @app.get('/environment')
-def get_all_environment():
+def get_all_environment() ->  List[Dict[str,Any]]:
     return environment.get_all()
 
 @app.get('/yield')
-def get_all_yields():
+def get_all_yields()-> List[Dict[str,Any]]:
     return yields.get_all()
 
 # GET A SINGLE RECORD
 @app.get('/items/{id}')
-def get_single_items(id):
+def get_single_items(id)-> Dict[str,Any]:
     return items.get(item_id=id)
 
 @app.get('/areas/{id}')
-def get_single_areas(id):
+def get_single_areas(id)-> Dict[str | int,Any]:
     return areas.get(area_id=id)
 
 @app.get('/environment/{id}')
-def get_single_environment(id):
+def get_single_environment(id) ->Dict[str,Any]:
     return environment.get(area_id=id)
 
 @app.get('/yield/{id}')
-def get_single_yields(id:int):
+def get_single_yields(id:int)-> Dict[str,Any]:
     return yields.get(area_id=id)
 
 # UPDATE A SINGLE RECORD 
@@ -93,20 +110,38 @@ def update_item(id):
 # CREATE AND ADD A SINGLE RECORD
 
 @app.post('/items/add')
-def create_item():
-    pass
+def create_item(req:Items):
+    items.create(Items(item_id=req.item_id,item_name=req.item_name))
+    return f'Added successfully'
 
-@app.post('/areas/add')
-def create_areas():
-    pass
+@app.post('/areas/add') # Double check !!!!
+def create_areas(req:Areas):
+    areas.create(Areas(area_id=req.area_id,area_name=req.area_name))
+    return f'Added successfully'
 
 @app.post('/environment/add')
-def create_environment():
-    pass
+def create_environment(req:EnvironmentInput):
+    env = Environment(
+        year=req.year,
+        temp=req.temp,
+        average_rai=req.rai,
+        pesticides_tavg=req.tavg,
+        area_id=req.area_id
+    )
+    environment.create(env)
+    return f'Added successfully'
 
 @app.post('/yield/add')
-def create_yield():
-    pass
+def create_yield(req: YieldIn):
+    yiel = Yield(
+        area_id=req.area_id,
+        item_id=req.item_id,
+        year=req.year,
+        hg_per_ha_yield=req.hg
+    )
+    yields.create(yiel)  
+    return f'Added successfully'
+
 
 # DELETE RECORDS
 

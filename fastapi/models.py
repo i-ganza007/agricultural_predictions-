@@ -20,6 +20,7 @@ class Crops(str, Enum):
     sw_potatoes = 'Sweet Potatoes'  
     plt_others = 'Plantains And Others'  
     yams = 'Yams'
+    kijumba = 'Ikijumba'
 
 class Items(SQLModel, table=True):
     item_id: int = Field(primary_key=True)
@@ -48,7 +49,7 @@ class Environment(SQLModel, table=True):
     average_rai: float
     pesticides_tavg: float
     temp: float
-    area_id: int = Field(foreign_key='areas.area_id', nullable=False, primary_key=True,ondelete='SET NULL')
+    area_id: int = Field(foreign_key='areas.area_id', nullable=False, primary_key=True)
     areas: Optional['Areas'] = Relationship(back_populates='environments')
 
     @validator('year')
@@ -64,8 +65,8 @@ class Environment(SQLModel, table=True):
         return v
 
 class Yield(SQLModel, table=True):
-    area_id: int = Field(primary_key=True, foreign_key='areas.area_id',ondelete='SET NULL')
-    item_id: int = Field(primary_key=True, foreign_key='items.item_id',ondelete='SET NULL')
+    area_id: int = Field(primary_key=True, foreign_key='areas.area_id')
+    item_id: int = Field(primary_key=True, foreign_key='items.item_id')
     year: int = Field(primary_key=True)
     hg_per_ha_yield: float
 
