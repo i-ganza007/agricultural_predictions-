@@ -14,6 +14,7 @@ pycountry==24.6.1
 pydantic==1.10.22
 pydantic_core==2.33.2
 PyModel==1.0
+pymongo==4.13.2
 PyMySQL==1.1.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
@@ -30,3 +31,4 @@ typing_extensions==4.14.1
 tzdata==2025.2
 uvicorn==0.35.0
 zipp==3.23.0
+dnspython==2.7.0
