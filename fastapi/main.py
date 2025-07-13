@@ -67,63 +67,102 @@ class EnvUpdate(BaseModel):
 # GET LAST ENTRIES
 @app.get('/items/latest')
 def get_latest_items() :
-    length=  len(list(items.get_all()))
-    return items.get_all()[length-1]
+    try:
+        length=  len(list(items.get_all()))
+        return items.get_all()[length-1]
+    except Exception as e:
+        return e
 @app.get('/environment/latest')
 def get_latest_environment() :
-    length=  len(list(environment.get_all()))
-    return environment.get_all()[length-1]
+    try:
+        length=  len(list(environment.get_all()))
+        return environment.get_all()[length-1]
+    except Exception as e:
+        return e
 @app.get('/yield/latest')
 def get_latest_yield() :
-    length=  len(list(yields.get_all()))
-    return yields.get_all()[length-1]
+    try:
+        length=  len(list(yields.get_all()))
+        return yields.get_all()[length-1]
+    except Exception as e:
+        return e
 @app.get('/areas/latest')
 def get_latest_areas() :
-    length=  len(list(areas.get_all()))
-    return areas.get_all()[length-1]
+    try:
+        length=  len(list(areas.get_all()))
+        return areas.get_all()[length-1]
+    except Exception as e:
+        return e
     
 # GET ALL REQUESTS
 @app.get('/items')
 def get_all_items() -> List[Dict[str | int , Any]]:
-    return items.get_all()
+    try:    
+        return items.get_all()
+    except Exception as e:
+        return e
 
 @app.get('/areas')
 def get_all_areas() -> List[Dict[str | int,Any]]:
-    return areas.get_all()
+    try:
+        return areas.get_all()
+    except Exception as e:
+        return e
 
 @app.get('/environment')
 def get_all_environment() ->  List[Dict[str,Any]]:
-    return environment.get_all()
+    try:
+        return environment.get_all()
+    except Exception as e:
+        return e
 
 @app.get('/yield')
 def get_all_yields()-> List[Dict[str,Any]]:
-    return yields.get_all()
+    try:
+        return yields.get_all()
+    except Exception as e:
+        return e
 
 # GET A SINGLE RECORD
 @app.get('/items/{id}')
 def get_single_items(id)-> Dict[str,Any]:
-    return items.get(item_id=id)
+    try:
+        return items.get(item_id=id)
+    except Exception as e:
+        return e
 
 @app.get('/areas/{id}')
 def get_single_areas(id)-> Dict[str | int,Any]:
-    return areas.get(area_id=id)
+    try:
+        return areas.get(area_id=id)
+    except Exception as e:
+        return e
 
 @app.get('/environment/{id}')
 def get_single_environment(id) ->Dict[str,Any]:
-    return environment.get(area_id=id)
+    try:
+        return environment.get(area_id=id)
+    except Exception as e:
+        return e
 
 @app.get('/yield/{id}')
 def get_single_yields(id:int)-> Dict[str,Any]:
-    return yields.get(area_id=id)
+    try:
+        return yields.get(area_id=id)
+    except Exception as e:
+        return e
 
 # UPDATE A SINGLE RECORD 
 
 @app.put('/items/update/{id}')
 def update_item(req:ItemUpdate,id:int):
-    item_update = items.get(item_id=id)
-    item_update.item_name = req.item_name
-    items.update(item_update)
-    return f'Updated Item {id}'
+    try:
+        item_update = items.get(item_id=id)
+        item_update.item_name = req.item_name
+        items.update(item_update)
+        return f'Updated Item {id}'
+    except Exception as e:
+        return e
 
 # @app.put('/areas/update/{id}')
 # def update_areas(req,id):
@@ -134,26 +173,35 @@ def update_item(req:ItemUpdate,id:int):
 
 @app.put('/environment/update/{id}/{year}')
 def update_environment(req:EnvUpdate,id:int,year:int):
-    env_update = environment.get(area_id=id,year=year)
-    env_update.average_rai = req.average_rai
-    env_update.pesticides_tavg = req.pesticides_tavg   
-    env_update.temp = req.temp
-    environment.update(env_update)
-    return f'Updated Environment {id}'
+    try:
+        env_update = environment.get(area_id=id,year=year)
+        env_update.average_rai = req.average_rai
+        env_update.pesticides_tavg = req.pesticides_tavg   
+        env_update.temp = req.temp
+        environment.update(env_update)
+        return f'Updated Environment {id}'
+    except Exception as e:
+        return e
 
 @app.put('/yield/update/{area_id}/{item_id}/{year}')
 def update_yield(req:YieldIn,area_id,item_id,year):
-    yield_update = yields.get(area_id=area_id,item_id=item_id,year=year)
-    yield_update.hg_per_ha_yield = req.hg_per_ha_yield
-    yields.update(yield_update)
-    return f'Updated Yield {id}'
+    try:
+        yield_update = yields.get(area_id=area_id,item_id=item_id,year=year)
+        yield_update.hg_per_ha_yield = req.hg_per_ha_yield
+        yields.update(yield_update)
+        return f'Updated Yield {id}'
+    except Exception as e:
+        return e
 
 # CREATE AND ADD A SINGLE RECORD
 
 @app.post('/items/add')
 def create_item(req:ItemsInput):
-    items.create(Items(item_name=req.item_name))
-    return f'Added successfully'
+    try:
+        items.create(Items(item_name=req.item_name))
+        return f'Added successfully'
+    except Exception as e:
+        return e
 
 # @app.post('/areas/add') # Double check !!!!
 # def create_areas(req:Areas):
@@ -162,50 +210,56 @@ def create_item(req:ItemsInput):
 
 @app.post('/environment/add/{id}')
 def create_environment(req:EnvironmentInput,id:int):
-    env = Environment(
-        year=req.year,
-        temp=req.temp,
-        average_rai=req.rai,
-        pesticides_tavg=req.tavg,
-        area_id=id
-    )
-    environment.create(env)
-    return f'Added successfully'
+    try:
+        env = Environment(year=req.year,temp=req.temp,average_rai=req.rai,pesticides_tavg=req.tavg,area_id=id)
+        environment.create(env)
+        return f'Added successfully'
+    except Exception as e:
+        return e
 
 @app.post('/yield/add/{area_id}/{item_id}')
 def create_yield(req: YieldIn,area_id,item_id):
-    yiel = Yield(
-        area_id=area_id,
-        item_id=item_id,
-        year=req.year,
-        hg_per_ha_yield=req.hg
-    )
-    yields.create(yiel)  
-    return f'Added successfully'
+    try:
+        yiel = Yield(area_id=area_id,item_id=item_id,year=req.year,hg_per_ha_yield=req.hg)
+        yields.create(yiel)  
+        return f'Added successfully'
+    except Exception as e:
+        return e
 
 
 # DELETE RECORDS
 
 @app.delete('/items/delete/{id}')
 def delete_items(id):
-    items.delete(items.get(id=id))
-    return f'Deleted {id} in items'
+    try:
+        items.delete(items.get(item_id=id))
+        return f'Deleted {id} in items'
+    except Exception as e:
+        return e
+# Since maybe having some secondary keys 
+# @app.delete('/areas/delete/{id}')
+# def delete_areas(id):
+#     try:
+#         areas.delete(areas.get(id=id))
+#         return f'Deleted {id} in areas'
+#     except Exception as e:
+#         return e
 
-@app.delete('/areas/delete/{id}')
-def delete_areas(id):
-    areas.delete(areas.get(id=id))
-    return f'Deleted {id} in areas'
+@app.delete('/environment/delete/{area_id}/{year}') 
+def delete_environment(area_id,year):
+    try:
+        environment.delete(environment.get(area_id=area_id,year=year))
+        return f'Deleted {area_id} in {year} in environment'
+    except Exception as e:
+        return e
 
-@app.delete('/environment/delete/{id}')
-def delete_environment(id):
-    environment.delete(environment.get(id=id))
-    return f'Deleted {id} in environment'
-
-@app.delete('/yields/delete/{id}')
-def delete_yields(id):
-    yields.delete(yields.get(id=id))
-    return f'Deleted {id} in yields'
-
+@app.delete('/yields/delete/{area_id}/{item_id}/{year}')
+def delete_yields(area_id,item_id,year):
+    try:
+        yields.delete(yields.get(item_id=item_id,area_id=area_id,year=year))
+        return f'Deleted {area_id} in {areas.get(area_id=area_id)} from {year} in yields'
+    except Exception as e:
+        return e
 
 
 
