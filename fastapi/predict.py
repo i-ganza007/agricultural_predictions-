@@ -48,6 +48,15 @@ def fetch_all_items():
         print(f"Error fetching items: {e}")
         return []
 
+def fetch_latest_item():
+    try:
+        response = requests.get(f"{BASE_URL}/items/latest")
+        response.raise_for_status()
+        return response.json().get("item_name")
+    except requests.RequestException as e:
+        print(f"Error fetching latest item: {e}")
+        return None
+
 def main():
     # Fetch the latest environment entry
     env_data = fetch_latest_environment()
@@ -75,8 +84,11 @@ def main():
         print("Failed to fetch areas or items for encoding")
         return
 
-    # Choose an item (e.g., first item from Items table)
-    item_name = all_items[0]  # Adjust if specific item needed
+    # Fetch the latest item
+    item_name = fetch_latest_item()
+    if not item_name:
+        print("Failed to fetch latest item")
+        return
 
     # Create label encoders
     area_encoder = LabelEncoder().fit(all_areas)
@@ -99,6 +111,7 @@ def main():
     # Make prediction
     try:
         prediction = model.predict(input_data)[0]
+        fetch_latest_item()
         print(f"Preparing prediction for {area_name}, {item_name}, {year}")
         print(f"Predicted hg/ha_yield: {float(prediction)}")
     except Exception as e:

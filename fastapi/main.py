@@ -8,6 +8,8 @@ from sqlmodel import SQLModel
 # from models import TestUser # You have to import the model instances before writing the create_all , since python doesn't run the code perfectly 
 from db_schema import engine
 import uvicorn
+import gzip
+import pickle
 from database_procedures import create_stored_procedures_and_triggers
 from models import Environment , Items ,Areas , Yield
 from sqlmodel_basecrud import BaseRepository
@@ -16,12 +18,21 @@ app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Load the trained model
+with gzip.open('best_model.pkl.gz', 'rb') as f:
+    model = pickle.load(f)
 
+# Dependency to get a database session
 with Session(engine) as session:
-    environment = BaseRepository(db=session,model=Environment)
-    items = BaseRepository(db=session,model=Items)
-    areas = BaseRepository(db=session,model=Areas)
-    yields = BaseRepository(db=session,model=Yield)
+    environment = BaseRepository(db=session, model=Environment)
+    items = BaseRepository(db=session, model=Items)
+    areas = BaseRepository(db=session, model=Areas)
+    yields = BaseRepository(db=session, model=Yield)
+
+# Define get_session for prediction endpoint
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 @app.on_event("startup")
 def on_startup():
@@ -41,10 +52,11 @@ def insert_recs():
         return {"Entered": "Data inserted successfully"}
     except Exception as e:
         logger.error(f"Data insertion failed: {str(e)}")
-        raise HTTPException(status_code=500,detail=f"Data insertion failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Data insertion failed: {str(e)}")
 
+# Pydantic models
 class ItemsInput(BaseModel):
-    item_name:str  
+    item_name: str
 
 class EnvironmentInput(BaseModel):
     year: int
@@ -55,13 +67,11 @@ class EnvironmentInput(BaseModel):
 class YieldIn(BaseModel):
     hg_per_ha_yield: float = Field(alias='hg')
 
-
-
 class ItemUpdate(BaseModel):
     item_name: str
 
 class EnvUpdate(BaseModel):
-    temp:float
+    temp: float
     average_rai: float = Field(alias="rai")
     pesticides_tavg: float = Field(alias="tavg")
     class Config:
@@ -155,8 +165,7 @@ def get_single_yields(id:int)-> Dict[str,Any]:
     except Exception as e:
         return e
 
-# UPDATE A SINGLE RECORD 
-
+# UPDATE A SINGLE RECORD
 @app.put('/items/update/{id}')
 def update_item(req:ItemUpdate,id:int):
     try:
@@ -197,7 +206,6 @@ def update_yield(req:YieldIn,area_id,item_id,year):
         return e
 
 # CREATE AND ADD A SINGLE RECORD
-
 @app.post('/items/add')
 def create_item(req:ItemsInput):
     try:
@@ -231,7 +239,6 @@ def create_yield(req: YieldIn,area_id,item_id):
 
 
 # DELETE RECORDS
-
 @app.delete('/items/delete/{id}')
 def delete_items(id):
     try:
@@ -263,6 +270,10 @@ def delete_yields(area_id,item_id,year):
         return f'Deleted {area_id} in {areas.get(area_id=area_id)} from {year} in yields'
     except Exception as e:
         return e
+    
+
+
+
     
 
 @app.get("/procedures/item_yield_average/{item_id}")
