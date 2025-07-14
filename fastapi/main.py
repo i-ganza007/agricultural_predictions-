@@ -8,6 +8,8 @@ from sqlmodel import SQLModel
 # from models import TestUser # You have to import the model instances before writing the create_all , since python doesn't run the code perfectly 
 from db_schema import engine
 import uvicorn
+import gzip
+import pickle
 from database_procedures import create_stored_procedures_and_triggers
 from models import Environment , Items ,Areas , Yield
 from sqlmodel_basecrud import BaseRepository
@@ -268,6 +270,10 @@ def delete_yields(area_id,item_id,year):
         return f'Deleted {area_id} in {areas.get(area_id=area_id)} from {year} in yields'
     except Exception as e:
         return e
+    
+
+
+
     
 
 @app.get("/procedures/item_yield_average/{item_id}")
