@@ -1,12 +1,14 @@
-from fastapi import FastAPI, HTTPException , Depends
+from fastapi import FastAPI, HTTPException , Query
 from data_proces import enter_data , Session
 import logging
+from sqlalchemy import text
 from typing import Any, List , Dict 
 from pydantic import BaseModel , Field
 from sqlmodel import SQLModel
 # from models import TestUser # You have to import the model instances before writing the create_all , since python doesn't run the code perfectly 
 from db_schema import engine
 import uvicorn
+from database_procedures import create_stored_procedures_and_triggers
 from models import Environment , Items ,Areas , Yield
 from sqlmodel_basecrud import BaseRepository
 
@@ -24,6 +26,7 @@ with Session(engine) as session:
 @app.on_event("startup")
 def on_startup():
     SQLModel.metadata.create_all(engine) # Every model that inherits from SQLModel has metadata , every model that has a table = true has a metadata attribute
+    create_stored_procedures_and_triggers()  # This creates our stored procedures
 # This MetaData object at SQLModel.metadata has a create_all() method.
 #It takes an engine and uses it to create the database and all the tables registered in this MetaData object.
 @app.get("/")
@@ -260,6 +263,75 @@ def delete_yields(area_id,item_id,year):
         return f'Deleted {area_id} in {areas.get(area_id=area_id)} from {year} in yields'
     except Exception as e:
         return e
+    
+
+@app.get("/procedures/item_yield_average/{item_id}")
+def get_item_yield_average(item_id: int):
+    """Endpoint that uses the CalculateItemYieldAverage stored procedure"""
+    try:
+        with Session(engine) as session:
+            result = session.execute(
+                text("CALL CalculateItemYieldAverage(:item_id)"),
+                {"item_id": item_id}
+            ).fetchall()
+            return [dict(row) for row in result]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/procedures/area_environment_stats/{area_id}")
+def get_area_environment_stats(area_id: int):
+    """Endpoint that uses the GetAreaEnvironmentStats stored procedure"""
+    try:
+        with Session(engine) as session:
+            result = session.execute(
+                text("CALL GetAreaEnvironmentStats(:area_id)"),
+                {"area_id": area_id}
+            ).fetchall()
+            return [dict(row) for row in result]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/procedures/predict_yield/{area_id}/{item_id}")
+def predict_yield(
+    area_id: int,
+    item_id: int,
+    temp: float = Query(...),
+    rain: float = Query(...),
+    pesticides: float = Query(...)
+):
+    """Endpoint that uses the PredictYield stored procedure"""
+    try:
+        with Session(engine) as session:
+            result = session.execute(
+                text("CALL PredictYield(:area_id, :item_id, :temp, :rain, :pesticides)"),
+                {
+                    "area_id": area_id,
+                    "item_id": item_id,
+                    "temp": temp,
+                    "rain": rain,
+                    "pesticides": pesticides
+                }
+            ).scalar()
+            return {"predicted_yield": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/procedures/top_producing_areas/{item_id}/{year}")
+def get_top_producing_areas(
+    item_id: int,
+    year: int,
+    limit: int = Query(10, gt=0, le=100)
+):
+    """Endpoint that uses the FindTopProducingAreas stored procedure"""
+    try:
+        with Session(engine) as session:
+            result = session.execute(
+                text("CALL FindTopProducingAreas(:item_id, :year, :limit)"),
+                {"item_id": item_id, "year": year, "limit": limit}
+            ).fetchall()
+            return [dict(row) for row in result]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
