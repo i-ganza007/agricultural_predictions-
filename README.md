@@ -11,10 +11,6 @@
 
 ---
 
-<p align="center"> 
-
-    <br> 
-</p>
 
 ## 📝 Table of Contents
 
@@ -151,11 +147,14 @@ You need to install the above packages and frameworks specified in the  Dependen
 
 ### Installing
 
+```bash
 cd agricultural_predictions-
 
 cd fastapi
 
 uvicorn main:app --reload
+```
+
 
 
 ## ⛏️ Built With <a name = "tech_stack"></a>
