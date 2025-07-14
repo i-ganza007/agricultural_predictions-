@@ -209,59 +209,5 @@ def delete_yields(id):
     yields.delete(yields.get(id=id))
     return f'Deleted {id} in yields'
 
-# Prediction endpoint
-class PredictionInput(BaseModel):
-    area_name: str
-    item_name: str
-    year: int
-    average_rainfall_mm_per_year: float = Field(alias="rai")
-    pesticides_tonnes: float = Field(alias="tavg")
-    avg_temp: float = Field(alias="temp")
-
-@app.post('/predict')
-def predict_yield(req: PredictionInput, session: Session = Depends(get_session)):
-    try:
-        # Initialize BaseRepository for Areas and Items
-        area_repo = BaseRepository(db=session, model=Areas)
-        item_repo = BaseRepository(db=session, model=Items)
-
-        # Validate area_name and item_name
-        area = area_repo.get_by_field(area_name=req.area_name)
-        if not area:
-            raise HTTPException(status_code=404, detail=f"Area {req.area_name} not found")
-        item = item_repo.get_by_field(item_name=req.item_name)
-        if not item:
-            raise HTTPException(status_code=404, detail=f"Item {req.item_name} not found")
-
-        # Fetch all areas and items for encoding
-        all_areas = [a.area_name for a in area_repo.get_all()]
-        all_items = [i.item_name for i in item_repo.get_all()]
-
-        # Create label encoders
-        area_encoder = LabelEncoder().fit(all_areas)
-        item_encoder = LabelEncoder().fit(all_items)
-
-        # Encode categorical features
-        encoded_area = area_encoder.transform([req.area_name])[0]
-        encoded_item = item_encoder.transform([req.item_name])[0]
-
-        # Prepare input for model
-        input_data = pd.DataFrame([{
-            'Area': encoded_area,
-            'Item': encoded_item,
-            'Year': req.year,
-            'average_rain_fall_mm_per_year': req.average_rainfall_mm_per_year,
-            'pesticides_tonnes': req.pesticides_tonnes,
-            'avg_temp': req.avg_temp
-        }])
-
-        # Make prediction
-        prediction = model.predict(input_data)[0]
-
-        return {"predicted_hg_per_ha_yield": float(prediction)}
-    except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
