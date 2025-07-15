@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlmodel import Session, select
-from db_schema import engine 
+from db_schema_file import engine 
 from models import Items, Areas, Environment, Yield  , countries
 
 data = pd.read_csv('yield_df.csv')

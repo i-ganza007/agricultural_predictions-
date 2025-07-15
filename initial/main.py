@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException , Query
-from data_proces import enter_data , Session
+from data_proces_file import enter_data , Session
 import logging
 from sqlalchemy import text
 from typing import Any, List , Dict 
 from pydantic import BaseModel , Field
 from sqlmodel import SQLModel
-from db_schema import engine
+from db_schema_file import engine
 import uvicorn
 import gzip
 import pickle
