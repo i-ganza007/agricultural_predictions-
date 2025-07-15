@@ -12,7 +12,6 @@
 ## 📝 Table of Contents
 
 - [Problem Statement](#problem_statement)
-- [Idea / Solution](#idea)
 - [Dependencies / Limitations](#limitations)
 - [Future Scope](#future_scope)
 - [Setting up a local environment](#getting_started)
@@ -34,12 +33,7 @@ Key components include:
 
     A FastAPI interface with CRUD endpoints to interact with the databases and invoke the prediction model.
 
-## 💡 Idea / Solution <a name = "idea"></a>
 
-This section is used to describe potential solutions.
-
-Once the ideal, reality, and consequences sections have been
-completed, and understood, it becomes easier to provide a solution for solving the problem.
 
 ## ⛓️ Dependencies / Limitations <a name = "limitations"></a>
 
@@ -168,6 +162,8 @@ uvicorn main:app --reload
 ```
 
 The application will be available at `http://127.0.0.1:8000`
+The link of the deployed API is https://agricultural-predictions.onrender.com
+The link to the deployed MySQL instance is https://railway.com/invite/B-W_QqdlI4L
 
 ### API Endpoints for Predictions
 
