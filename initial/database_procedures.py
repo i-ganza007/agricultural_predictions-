@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from db_schema import engine
+from db_schema_file import engine
 import logging
 
 logger = logging.getLogger(__name__)
