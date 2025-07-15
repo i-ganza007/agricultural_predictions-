@@ -185,3 +185,4 @@ The application will be available at `http://127.0.0.1:8000`
 
 - Ian Ganza --> MySQL and FastAPI endpoints
 - Annabelle Ineza --> Model prediction script and prediction saving to database
+- Owen Yhaan --> NoSQL and MongoDB endpoints initialisation and configuration 
